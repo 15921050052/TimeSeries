@@ -37,6 +37,7 @@ $RECYCLE.BIN/
 
 # Directories potentially created on remote AFP share
 .AppleDB
+.Rproj.user/*
 .AppleDesktop
 Network Trash Folder
 Temporary Items
@@ -45,3 +46,6 @@ Temporary Items
 .Rproj.user/4FE6FCF/sdb/s-8A3D6A17/ADC52A4A
 *.Rproj
 .Rproj.user/4FE6FCF/sdb/s-8A3D6A17/lock_file
+*.RData
+
+*.Rhistory
