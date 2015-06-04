@@ -2,8 +2,8 @@ if(!require(tseries)){
   install.packages("tseries")
   library(tseries)
 }
-
-
+NTest<-4
+NPred<-4
 
 ##################################################
 #Cargar los datos
@@ -20,6 +20,4 @@ Datos1 <- scan("serie1.dat")
 Datos2 <- scan("serie2.dat")
 
 ##################################################
-
-
 

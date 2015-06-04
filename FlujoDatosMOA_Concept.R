@@ -2,10 +2,10 @@
 ###                           Experimento 1                                  ###
 ################################################################################
 
-
+print("Experimento 1:")
 ### Cargar datos ADWIN
 Experiment_1_ADWIN<-CargarFlujosDatos(Experimento = 1,tipo = "ADWIN")
-print(MDR(Experiment_1_ADWIN ))
+print(MDR(Experiment_1_ADWIN))
 print(MTD(Experiment_1_ADWIN))
 ### Cargar datos DNN
 Experiment_1_DDM<-CargarFlujosDatos(Experimento = 1,tipo = "DDM")
@@ -13,48 +13,60 @@ print(MDR(Experiment_1_DDM))
 print(MTD(Experiment_1_DDM))
 
 
+################################################################################
+###                           Experimento 2                                  ###
+################################################################################
 
+print("Experimento 2:")
+### Cargar datos ADWIN
+Experiment_2_ADWIN<-CargarFlujosDatos(Experimento = 2,tipo = "ADWIN")
+print(MDR(Experiment_2_ADWIN ))
+print(MTD(Experiment_2_ADWIN))
+### Cargar datos DNN
+Experiment_2_DDM<-CargarFlujosDatos(Experimento = 2,tipo = "DDM")
+print(MDR(Experiment_2_DDM))
+print(MTD(Experiment_2_DDM))
 
+################################################################################
+###                           Experimento 3                                  ###
+################################################################################
 
-Meadias<-mean(unlist(lapply(1:5,function(x){
-  Experiment_1_ADWIN[[x]][is.na(Experiment_1_ADWIN[[x]])] <- 0
-  mean(Experiment_1_ADWIN[[x]][,9])
-})))
+print("Experimento 3:")
+### Cargar datos ADWIN
+Experiment_3_ADWIN<-CargarFlujosDatos(Experimento = 3,tipo = "ADWIN")
+print(MDR(Experiment_3_ADWIN ))
+print(MTD(Experiment_3_ADWIN))
+### Cargar datos DNN
+Experiment_3_DDM<-CargarFlujosDatos(Experimento = 3,tipo = "DDM")
+print(MDR(Experiment_3_DDM))
+print(MTD(Experiment_3_DDM))
 
+################################################################################
+###                           Experimento 4                                  ###
+################################################################################
 
-
-
-Medias<-mean(unlist(lapply(1:5,function(x){
-  Experiment_1_DDM[[x]][is.na(Experiment_1_DDM[[x]])] <- 0
-  mean(Experiment_1_ADWIN[[x]][,9])
-})))
+print("Experimento 4:")
+### Cargar datos ADWIN
+Experiment_4_ADWIN<-CargarFlujosDatos(Experimento = 4,tipo = "ADWIN")
+print(MDR(Experiment_4_ADWIN ))
+print(MTD(Experiment_4_ADWIN))
+### Cargar datos DNN
+Experiment_4_DDM<-CargarFlujosDatos(Experimento = 4,tipo = "DDM")
+print(MDR(Experiment_4_DDM))
+print(MTD(Experiment_4_DDM))
 
 ################################################################################
 ###                           Experimento 2                                  ###
 ################################################################################
 
+print("Experimento 5:")
+### Cargar datos ADWIN
+Experiment_5_ADWIN<-CargarFlujosDatos(Experimento = 5,tipo = "ADWIN")
+print(MDR(Experiment_5_ADWIN ))
+print(MTD(Experiment_5_ADWIN))
+### Cargar datos DNN
+Experiment_5_DDM<-CargarFlujosDatos(Experimento = 5,tipo = "DDM")
+print(MDR(Experiment_5_DDM))
+print(MTD(Experiment_5_DDM))
 
 
-
-
-
-
-
-
-
-
-
-ADWIN_2_1<-read.csv("Flujo de datos/ADWIN Exp 2/ADWIN_2_1.csv",na.strings = "?")
-ADWIN_3_1<-read.csv("Flujo de datos/ADWIN Exp 3/ADWIN_3_1.csv",na.strings = "?")
-ADWIN_4_1<-read.csv("Flujo de datos/ADWIN Exp 4/ADWIN_4_1.csv",na.strings = "?")
-ADWIN_5_1<-read.csv("Flujo de datos/ADWIN Exp 5/ADWIN_5_1.csv",na.strings = "?")
-
-
-
-mean(ADWIN_5_1$delay.detection..average.,na.rm =T)
-
-plot(ADWIN_5_1$delay.detection..average.)
-plot(ADWIN_5_1$true.changes.detected)
-
-plot(ADWIN_5_1$detected.changes)
-plot(ADWIN_5_1$delay.detection..average.)
