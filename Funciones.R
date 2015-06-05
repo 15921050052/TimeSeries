@@ -1,9 +1,3 @@
-EliminarTendencia<-function(x){
-  
-  
-}
-
-
 FiltrarSerie<-function(serie, k){
   filtro<-rep(1/k, k); # Creamos el filtro
   
@@ -23,13 +17,13 @@ CargarFlujosDatos<- function(Experimento,tipo){
   if(tipo=="ADWIN"){
       listaSalida<-lapply(1:5,function(x){
       ADWIN<-read.csv(file = paste(sep = "","Flujo de datos/ADWIN Exp ",Experimento,
-                              "/ADWIN_",Experimento,"_",i,".csv"),na.strings = "?")
+                              "/ADWIN_",Experimento,"_",x,".csv"),na.strings = "?")
         ADWIN
       })    
   }else if(tipo=="DDM"){
     listaSalida<-lapply(1:5,function(x){
       DDM<-read.csv(file = paste(sep = "","Flujo de datos/DDM Exp ",Experimento,
-                                 "/DDM_",Experimento,"_",i,".csv"),na.strings = "?")
+                                 "/DDM_",Experimento,"_",x,".csv"),na.strings = "?")
       DDM
     })   
   }else{
@@ -49,11 +43,11 @@ MTD<-function(Lista){
 
 MDR<-function(Lista){
   mdr<-mean(unlist(lapply(1:5,function(x){
-    if(Lista[[x]][,8]==0){
-      sal<-0
+    Lista[[x]][is.na(Lista[[x]])] <- 0
+    if(sum(Lista[[x]][,8])==0){
+      sal<-1
     }else{
-      Lista[[x]][is.na(Lista[[x]])] <- 0
-      sal<-1-(Lista[[x]][,10]/Lista[[x]][,8]) 
+      sal<-1.0-(sum(Lista[[x]][,10])/sum(Lista[[x]][,8])) 
     }
     sal
   })))

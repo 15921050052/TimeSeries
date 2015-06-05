@@ -1,9 +1,19 @@
 source("Main.R")
 source("Funciones.R")
+#library("nortest");
+#librerias de time series
+library("dyn");
+library("ArDec");
+library("forecast");
+library("fBasics");
+#library("fCalendar");
+#library("fSeries");
+library("tseries");
 #Datos1<-log(Datos1)
-serie.log<-log(Datos1-min(Datos1)+1)
-serie.log<-Datos1
-serie.ts<- ts(serie.log,frequency=4,start = c(1,2))
+serie.log<-log(Datos1-min(Datos1)+1)#+mean(Datos1))
+#serie.log<-Datos1
+serie.ts<- ts(serie.log[-c(1,2,3,4,5,6,7,8,9,10,11,12,13,14)],frequency=4,start = c(1,2))
+Datos1<-Datos1[-c(1,2,3)]
 fit <- auto.arima(serie.ts)
 #serie.ts<- ts(Datos1,frequency=4,start = c(1,2))
 #serie.log<-log(serie.ts-min(serie.ts)+1)
@@ -37,7 +47,7 @@ lines(tiempoTs,serieTs,col="red")
 
 # Hipótesis: Modelo x= a + b*t+c*t^2 (x=serie; t=tiempo; a,b=parámetros a estimar)
 tiempoTr<- 1:length(serie.ts) # Creamos la variable que modela al tiempo
-parametros.H1 <- lm (serie.ts ~ tiempoTr)#+I(tiempoTr^2) ) # Ajustamos modelo lineal
+parametros.H1 <- lm (serie.ts ~ tiempoTr)+I(tiempoTr^2) ) # Ajustamos modelo lineal
 
 # Calculamos la estimación de la tendencia
 TendEstimadaTr.H1<-parametros.H1$coefficients[1]+tiempoTr*
@@ -267,4 +277,13 @@ plot.ts(serie, xlim=c(1, max(tiempoPred)))
 lines(valoresAjustados, col="blue")
 lines(tiempoPred,valoresPredichos, col= "red")
 lines(tiempoPred, predReales, col="green")
+
+
+
+
+DATOS.TS.AR <- ar(Datos1);
+plot(forecast(DATOS.TS.AR,4,conf=c(20,55)))
+
+
+
 

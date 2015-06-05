@@ -2,6 +2,7 @@ if(!require(tseries)){
   install.packages("tseries")
   library(tseries)
 }
+require(forecast)
 NTest<-4
 NPred<-4
 
