@@ -13,7 +13,7 @@ require(XML)
 ACF<-function(serie.ts){
   bacf <- acf(serie.ts, plot = FALSE)
   bacfdf <- with(bacf, data.frame(lag, acf))
-  bacfdf$colour <- ifelse((bacfdf$acf < 0.2 | bacfdf$acf < -0.2), "red",
+  bacfdf$colour <- ifelse((bacfdf$acf < 0.2 & bacfdf$acf > -0.2), "red",
                        "green")
 
   if(sum(bacfdf$acf<=0)==0){
@@ -36,7 +36,7 @@ ACF<-function(serie.ts){
 PACF<-function(serie.ts){
   bpacf <- pacf(serie.ts, plot = F)
   bpacfdf <- with(bpacf, data.frame(lag, acf))
-  bpacfdf$colour <- ifelse((bacfdf$acf < 0.2 | bacfdf$acf < -0.2), "red",
+  bpacfdf$colour <- ifelse((bpacfdf$acf < 0.2 & bpacfdf$acf > -0.2), "red",
                           "green")
   if(sum(bpacfdf$acf<=0)==0){
     q <- ggplot(data = bpacfdf, mapping = aes(x = lag, y = acf)) +
@@ -73,6 +73,19 @@ DESCOMPOSE<-function(serie.ts){
   
 }
 
+PLOT<-function(serie.ts){
+  Serie<-data.frame(tiempo=1:length(serie.ts),valor=serie.ts)
+  ggplot(Serie,aes(x=tiempo,y=valor))+geom_line(col="blue")+
+    theme(axis.title.x = element_blank(),axis.title.y=element_blank())
+}
+PLOT2<-function(serie.ts,tiempoTr,serie.ts2){
+  Serie<-data.frame(tiempo=1:length(serie.ts),valor=serie.ts,valor1=serie.ts2)
+  ggplot(Serie,aes(x=tiempo,y=valor))+
+    geom_line(aes(y=valor),col=ifelse(Serie$tiempo<=tiempoTr[length(tiempoTr)],"blue","red"))+
+    geom_line(aes(y=valor1),col=ifelse(Serie$tiempo<=tiempoTr[length(tiempoTr)],"green","yellow"))+
+    theme(axis.title.x = element_blank(),axis.title.y=element_blank())
+  
+}
 
 HTML<-function(Grafico,Nombre){
   p<-Grafico
