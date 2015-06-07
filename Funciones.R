@@ -121,7 +121,7 @@ PACF<-function(serie.ts){
   q
 }
 
-DESCOMPOSE<-function(serie.ts){
+DECOMPOSE<-function(serie.ts){
   datos<-data.frame(Tiempo=1:length(as.vector(as.matrix(decompose(serie.ts)$x))),
                     Original=as.vector(as.matrix(decompose(serie.ts)$x)))
   Tendencia<-as.vector(as.matrix(decompose(serie.ts)$trend))
@@ -141,7 +141,12 @@ PLOT<-function(serie.ts){
   ggplot(Serie,aes(x=tiempo,y=valor))+geom_line(col="blue")+
     theme(axis.title.x = element_blank(),axis.title.y=element_blank())
 }
-
+PLOT_C2<-function(serie.ts,tiempoTr){
+  Serie<-data.frame(tiempo=1:length(serie.ts),valor=serie.ts)
+  ggplot(Serie,aes(x=tiempo,y=valor))+
+    geom_line(aes(y=valor),col=ifelse(Serie$tiempo<=tiempoTr[length(tiempoTr)],"blue","red"),size=1)+
+    theme(axis.title.x = element_blank(),axis.title.y=element_blank())
+}
 PLOT2<-function(serie.ts,tiempoTr,serie.ts2){
   Serie<-data.frame(tiempo=1:length(serie.ts),valor=serie.ts,valor1=serie.ts2)
   ggplot(Serie,aes(x=tiempo,y=valor))+

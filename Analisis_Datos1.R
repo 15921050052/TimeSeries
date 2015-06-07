@@ -1,289 +1,233 @@
 source("Main.R")
 source("Funciones.R")
-#library("nortest");
-#librerias de time series
-library("dyn");
-library("ArDec");
-library("forecast");
-library("fBasics");
-#library("fCalendar");
-#library("fSeries");
-library("tseries");
-#Datos1<-log(Datos1)
-serie.log<-log(Datos1-min(Datos1)+1)#+mean(Datos1))
-#serie.log<-Datos1
-serie.ts<- ts(serie.log[-c(1,2,3,4,5,6,7,8,9,10,11,12,13,14)],frequency=4,start = c(1,2))
-Datos1<-Datos1[-c(1,2,3)]
-fit <- auto.arima(serie.ts)
-#serie.ts<- ts(Datos1,frequency=4,start = c(1,2))
-#serie.log<-log(serie.ts-min(serie.ts)+1)
-#Datos1<-c(Datos1[1],Datos1)
-#serie.ts<- ts(Datos1,frequency=4)
-plot(decompose(serie.ts))
-#Los siguientes datos corresponden a:
-# -x: Serie original
-# -seasonal: Componente estacional
-# -trend: Tendencia
-# -random: lo que queda despues de eliminar tendencia y estacionalida
-decompose(serie.ts)
+NPred<-2
+NTest<-2
+##################################################################
+##                      Trasformaciones                          #
+##################################################################
+serie.ts<-ts(Datos1,frequency = 4)
+#serie.log<-log(Datos1-min(Datos1)+1)
+#Dibujamos la serie
+PLOT(serie.ts)
+#Dibujamos la descomposicion de la serie
+DECOMPOSE(serie.ts)
+#Aplicamos el log a la serie para intentar reducir la varianza del random en su parte final
+serie.log<-log(Datos1)
+serie.orig<-Datos1 # Guardamos copia de seguridad de la serie original
+serie<-serie.log
+serie.ts<-ts(serie,frequency = 4)
+
+##Dibujamos la descomposicion de la serie
+DECOMPOSE(serie.ts)
 
 ##################################################################
 ##      Division en conjuntos Tes y Training                     #
 ##################################################################
+serieTr<-serie[1:(length(serie)-NTest)]
+tiempoTr<- 1:length(serieTr)
 
-serieTr <- serie.ts[1:(length(serie.ts)-NTest)]
-tiempoTr <- 1:length(serieTr)
+serieTs<-serie[(length(serie)-NTest+1):length(serie)]
+tiempoTs<-(tiempoTr[length(tiempoTr)]+1):(tiempoTr[length(tiempoTr)]+NTest)
 
-serieTs <-  serie.ts[(length(serie.ts)-NTest+1):length(Datos1)]
-tiempoTs <- (tiempoTr[length(tiempoTr)]+1):(tiempoTr[length(tiempoTr)]+NTest)
-
-#Mostar serie de entrenamiento(negro) y serie de test en rojo
-plot.ts(serieTr, xlim=c(1,tiempoTs[length(tiempoTs)]))
-lines(tiempoTs,serieTs,col="red")
+#Pintamos la serie de entrenamiento y la de test
+PLOT_C2(serie.ts,tiempoTr)
 
 ##################################################################
 ##                      Modelar la tendencia                     #
 ##################################################################
+parametros <- lm (serieTr ~ tiempoTr ) # Ajustamos modelo lineal
 
-# Hipótesis: Modelo x= a + b*t+c*t^2 (x=serie; t=tiempo; a,b=parámetros a estimar)
-tiempoTr<- 1:length(serie.ts) # Creamos la variable que modela al tiempo
-parametros.H1 <- lm (serie.ts ~ tiempoTr)+I(tiempoTr^2) ) # Ajustamos modelo lineal
+#tiempoTr<- 1:length(serie.ts) # Creamos la variable que modela al tiempo
+#parametros <- lm (serieTr ~ I(log(tiempoTr)) ) # Ajustamos modelo lineal
+# Calculamos la estimación de la tendencia
+#TendEstimadaTr.H1<-parametros.H1$coefficients[1]+log(tiempoTr)*parametros.H1$coefficients[2]
+
+
 
 # Calculamos la estimación de la tendencia
-TendEstimadaTr.H1<-parametros.H1$coefficients[1]+tiempoTr*
-  parametros.H1$coefficients[2]+
-  (tiempoTr^2)*parametros.H1$coefficients[3]
-
-# Mostramos en la misma figura la serie y la tendencia estimada
-series<-matrix(c(t(serie.ts), t(TendEstimadaTr.H1)), ncol=2); # Mostramos resultado
-matplot(series, pch=1, type= "l")
-
-parametros.H1<-FiltrarSerie(serieTr,3)
-parametros.H1[parametros.H1[is.na(parametros.H1)]]
-parametros.H1 <- lm(serieTr ~ tiempoTr)
+TendEstimadaTr<-parametros$coefficients[1]+tiempoTr*parametros$coefficients[2]
+TendEstimadaTs<-parametros$coefficients[1]+tiempoTs*parametros$coefficients[2]
 
 
-TendEstimadaTr.H1 <- parametros.H1$coefficients[1]+tiempoTr*parametros.H1$coefficients[2]
-TendEstimadaTs.H1 <- parametros.H1$coefficients[1]+tiempoTs*parametros.H1$coefficients[2]
-
-
-tiempoTr<- 1:length(serie.ts) # Creamos la variable que modela al tiempo
-parametros.H1 <- lm (serie.ts ~ I(log(tiempoTr)) ) # Ajustamos modelo lineal
-
-# Calculamos la estimación de la tendencia
-TendEstimadaTr.H1<-parametros.H1$coefficients[1]+log(tiempoTr)*parametros.H1$coefficients[2]
-
-# Mostramos en la misma figura la serie y la tendencia estimada
-series<-matrix(c(t(serie.ts), t(TendEstimada)), ncol=2); # Mostramos resultado
-matplot(series, pch=1, type= "l")
-
-
-plot.ts(serieTr,xlim=c(1,tiempoTs[length(tiempoTs)]),ylim=c(min(serieTr),(max(serieTr)+2)))
-lines(tiempoTr, TendEstimadaTr.H1,col="blue")
-lines(tiempoTs,serieTs,col="red")
-lines(tiempoTs,TendEstimadaTs.H1,col="green")
-
-###Validacion del error###
-# el error es normal si se distribulle igual a lo largo del tiempo
-#aplicaremos e test de normalidad de JarqueBera para ver si esto ocurre
-# lo aplicaremos tanto en los residuos del entrenamiento y en los del test
-#calculados mediante la tendencia que hemos estimado
-
-JBtr <- jarque.bera.test(parametros.H1$residuals)
-print(JBtr)
-#0.4158 valor superior a 0.05 por lo tanto los datos no son diferentes
-JBts <- jarque.bera.test(TendEstimadaTs.H1-serieTs)
-print(JBts)
-# 0.6442 no hay diferencais significativas , podemos decir que no hay diferencias significativas entre el error
-#Test de Student
-TT <- t.test(c(parametros.H1$residuals,TendEstimadaTs.H1-serieTs))
-print(TT$p.value)
-#0.5415 no hay una desviacion siginicativa entre los errores de train y test,
-# por lo tanto podemos asumir que la tendencia obtenida por el modelo lineal es buena
+#Dibujamos la tendencia del entrenamiento y del test
+PLOT2(serie.ts,tiempoTr,c(TendEstimadaTr,TendEstimadaTs))
 
 ##################################################################
 #             Eliminamos la tendencia                            #
 ##################################################################
+SerSinTendTr<-serieTr-TendEstimadaTr
+SerSinTendTs<-serieTs-TendEstimadaTs
 
-serieTr.SinTend<- serieTr - TendEstimadaTr.H1
-#serieTr.SinTend<- serieTr[-c(1,length(serieTr))] -parametros.H1
-#serieTr.SinTend<-filter(serie.ts,filter=filtro,sides=2,method="convolution")
-serieTs.SinTend<- serieTs -TendEstimadaTs.H1
+#Pintamos la serie sin la tendencia
+PLOT_C2(c(SerSinTendTr,SerSinTendTs),tiempoTr)
 
-plot.ts(serieTr.SinTend,xlim=c(1,tiempoTs[length(tiempoTs)]))
-lines(tiempoTs, serieTs.SinTend,col="blue")
+ACF(SerSinTendTr) # Mostramos ACF
+PACF(SerSinTendTr) # Mostramos PACF
+
+jarque.bera.test(parametros$residuals) #Tiene que ser mayor que 0.05
+jarque.bera.test(TendEstimadaTs-serieTs)
+t.test(c(parametros$residuals,TendEstimadaTs-serieTs))
+
+#Probamos con filtrado
+k=5
+
+SerFiltradaTr<-FiltrarSerie(serieTr,k)
+
+
+#Dibujamos la serie
+PLOT2(SerFiltradaTr,tiempoTr,serieTr)
 
 ##################################################################
-# liminacion de la estacionalidad
+#             Eliminamos la tendencia Filtro                     #
 ##################################################################
+SerSinTendTr<-serieTr-SerFiltradaTr
+PLOT(na.omit(SerSinTendTr))
+ACF(na.omit(SerSinTendTr)) # Mostramos ACF del filtrado
+PACF(na.omit(SerSinTendTr)) # Mostramos PACF
 
-#asumimos u epriodo de 4 meses
-#ulilizamos descompose para eliminar la estacionalidad
+jarque.bera.test(na.omit(serieTr-SerSinTendTr)) #Tiene que ser mayor que 0.05
+
+#Probamos con diferenciación
+d_SerSinTendTr<-diff(serieTr,lag=1)
+PLOT(d_SerSinTendTr)
+jarque.bera.test(serieTr-d_SerSinTendTr)
+SerSinTendTr<-serieTr-TendEstimadaTr
+
+PLOT2(scale(c(d_SerSinTendTr,NA),center=T,scale=F),
+      tiempoTr,scale(SerSinTendTr,scale=F))
+
+
+SerSinTendTr<-serieTr-SerFiltradaTr
+PLOT2(c(scale(na.omit(d_SerSinTendTr),center=T,scale=F),NA),
+      tiempoTr,scale(SerSinTendTr,center=T,scale=F))
+
+
+ACF(na.omit(d_SerSinTendTr)) # Mostramos ACF
+PACF(na.omit(d_SerSinTendTr))
+SerSinTendTr<-d_SerSinTendTr
+
+#Diferenciamos una vez el resultado del filtrado para obtener el ACF y la estacionalidad
+ACF(na.omit(diff(SerSinTendTr)))
+
+
+##################################################################
+###            eliminacion de la estacionalidad                ###
+##################################################################
+#Quitamos estacionalidad
 k<-4
-estacionalidad <- decompose(serie.ts)$seasonal[1:k]
+estacionalidad<-decompose(serie.ts)$seasonal[1:k]
+aux<-rep(estacionalidad,length(serie)/length(estacionalidad))
+SerSinTendEstTr<-SerSinTendTr-aux
+SerSinTendEstTs<-SerSinTendTs-estacionalidad
+
+PLOT2(SerSinTendEstTr,tiempoTr,SerSinTendTr)
+
+ACF(na.omit(SerSinTendEstTr))
+PACF(na.omit(SerSinTendEstTr))
+
+#Quitamos estacionariedad 
+adf.test(na.omit(SerSinTendEstTr)) 
+#Es mayor que 0.05, por lo que habría que eliminar la estacionariedad
+
+d_SerSinTendEstTr<-diff(na.omit(SerSinTendEstTr),lag = 1)
+
+adf.test(d_SerSinTendEstTr)
+
+ACF(d_SerSinTendEstTr)
+PACF(d_SerSinTendEstTr)
+
+PLOT2(scale(SerSinTendEstTr,center=T,scale=F),tiempoTr
+      ,c(d_SerSinTendEstTr,rep(NA,length(SerSinTendEstTr)-length(d_SerSinTendEstTr))))
+
+#################################################################
+########                   MODELAMOS                      #######
+#################################################################
+
+modelo1<-arima(SerSinTendEstTr,order=c(0,1,2)) #(4,3,0)
+valoresAjustados<-SerSinTendEstTr+modelo1$residuals
+
+predicciones<-predict(modelo1,n.ahead=NPred)
+valoresPredichos<-predicciones$pred
+
+#Calculamos el error cuadrático acumulado del ajuste, tanto en ajuste como en test.
+errorTr<-sum((modelo1$residual)^2)
+errorTs<-sum(valoresPredichos-SerSinTendEstTs[1:2])^2
+
+dibujatodo(SerSinTendEstTr,SerSinTendEstTs,valoresAjustados,valoresPredichos,
+           "Entrenamiento","Test","Ajustados","Predichos")
+
+#Test para la selección del modelo y su validación. Comprobamos primeramente la aleatoriedad
+Box.test(modelo1$residuals)
+
+#Ahora vamos a ver si los errores se distribuyen como una normal
+jarque.bera.test(na.omit(modelo1$residuals))#podemos asumir la normalidad de los residuos
+
+#Test de normalidad Shapiro-Wilk
+shapiro.test(modelo1$residuals)#también podemos asumir la normalidad
+
+#Probamos con otro modelo
+modelo2<-arima(SerSinTendEstTr,order=c(1,1,0)) #(4,3,0)
+valoresAjustados<-SerSinTendEstTr+modelo2$residuals
+
+predicciones<-predict(modelo2,n.ahead=NPred)
+valoresPredichos<-predicciones$pred
+
+#Calculamos el error cuadrático acumulado del ajuste, tanto en ajuste como en test.
+errorTr<-sum((modelo2$residual)^2)
+errorTs<-sum(valoresPredichos-SerSinTendEstTs[1:2])^2
+
+dibujatodo(SerSinTendEstTr,SerSinTendEstTs,valoresAjustados,valoresPredichos,
+           "Entrenamiento","Test","Ajustados","Predichos")
 
 
-#Asta qui tenemos un serie sintendencia ahora devemos quiitarnos las estacionalidad
-#aqui eliminaremos la estacioalidad
+###################################################################
+###                   Tests                                     ###
+###################################################################
 
-aux<- c(estacionalidad[2:4],rep(estacionalidad,length(serieTr)/length(estacionalidad)))
-#aux<- rep(estacionalidad,length(serieTr)/length(estacionalidad))
+#Tes para la selección del modelo y su validación. Comprobamos primeramente la aleatoriedad
+Box.test(modelo2$residuals)
 
-serieTr.SinTend.SinEst<- serieTr.SinTend-aux
+#Ahora vamos a ver si los errores se distribuyen como una normal
+jarque.bera.test(na.omit(modelo2$residuals))#podemos asumir la normalidad de los residuos
 
-serieTs.SinTend.SinEst <- serieTs.SinTend- estacionalidad
+#Test de normalidad Shapiro-Wilk
+shapiro.test(modelo2$residuals)#también podemos asumir la normalidad
 
- # Mostramos ACF
-#parece que decrece, no es totalmente seguro que sea estacionaria
-acf(serieTr.SinTend.SinEst)
-pacf(serieTr.SinTend.SinEst)
-#como el valor es mayor de 0.05 es no estacionaria
+#Comparamos cuál de los dos modelos es mejor
+AIC(modelo1,modelo2)
 
-ADFTr <- adf.test(serieTr.SinTend.SinEst)
-
-#utilizando la diferenciacion
-
-serieTr.SinTend.SinEst.Diff <- diff(serieTr.SinTend.SinEst,differences = 2)
-serieTs.SinTend.SinEst.Diff <- diff(serieTs.SinTend.SinEst,differences = 2)
-
-ADFTr.try2 <- adf.test(serieTr.SinTend.SinEst.Diff)
-
-acf(serieTr.SinTend.SinEst.Diff)
-pacf(serieTr.SinTend.SinEst.Diff)
-
-# como podemos ver aqui el p value nos da inferior a 0.05 y ademas
-#vemos como en el acf es mejor
-
-# viendo el acf y pacf es de un sistema autoregresivo
-# como hemos diferenciado una vez , tendremos un modelo arima()
-
-modelo<- arima(serieTr.SinTend.SinEst,order=c(2,0,0))
-valoresReconstruidos <- serieTr.SinTend.SinEst+modelo$residuals
-
-
-#prediccion:
-
-predicciones <- predict(modelo, n.ahead = 4)
-
-valores.predichos <- predicciones$pred
-
-#podemos calcular el error
-
-errorTr <- sum(modelo$residuals^2)
-errorTs <- sum((valores.predichos-serieTs.SinTend.SinEst)^2)
-
-#Visualizacion del modelo
-
-
-plot.ts(serieTr.SinTend.SinEst ,
-        xlim=c(1,tiempoTs[length(tiempoTs)]),
-        ylim=c(min(serieTr.SinTend.SinEst),(max(serieTr.SinTend.SinEst))))
-lines(valoresReconstruidos,col="blue")
-lines(tiempoTs,serieTs.SinTend.SinEst,col="red")
-lines(tiempoTs,valores.predichos,col="green")
-
-#reconstruciion es buena aunque para el test es mala.
-
-##################################################################
-# validacion del modelo
-##################################################################
-
-#Test de Box-Pierce
-BTest <-Box.test(modelo$residuals)
-#P value , de 0.94 los errores son aleatorios
-#pues el p value es mayor a 0.05
-
-#Test JarqueBera y Shapiro-Wilk
-JBTest <- jarque.bera.test(modelo$residuals)
-# aqui nos da un 0.81 por lo tanto los residuos son normales
-
-SWTest <- shapiro.test(modelo$residuals)
-# en este test tambien el pvalue es mayor a 0.05 , por lo tanto lo pasa
-
-# despues de todo esto podemos decir que los errores son aleatorios
-
-hist(modelo$residuals, col="blue", prob=T,ylim=c(0,20),xlim=c(-0.2,0.2))
-lines(density(modelo$residuals))
-#podemos observar mediante el histograma que tenemos los errores en una media 0 y una varianza. 
-
-
-#reconstruccion + estacionalidad
-valoresReconstruidos.Est <- valoresReconstruidos+aux
-
-valores.predichos.Est <- valores.predichos+estacionalidad
-
-#añadimos la tendencia
-valoresReconstruidos.Est.Tend<- valoresReconstruidos.Est+TendEstimadaTr.H1
-
-valores.predichos.Est.Tend <- valores.predichos.Est + TendEstimadaTs.H1
-
-#desacemos en log
-
-valoresReconstruidos.Est.Tend.exp <- exp(valoresReconstruidos.Est.Tend)
-
-valores.predichos.Est.Tend.exp <- exp(valores.predichos.Est.Tend)
-
-
-plot.ts(serie)
-lines(tiempoTr, valoresReconstruidos.Est.Tend.exp  , col="blue")
-lines(tiempoTs, valores.predichos.Est.Tend.exp, col="red")
-
-##################################################################
-# Aplicacion del modelo con todo el conjutno para predecir el año siguiente
-##################################################################
-
-#CArgamos la serie completa (con la transformacion log)
-SerieEntera <- serie.log
-tiempo<- 1:length(SerieEntera)
-
-#Calculamos la tendencia de la seriem mediante una regresion lineal
-parametros<- lm(SerieEntera ~ tiempo)
-TendEstimada <- parametros$coefficients[1]+tiempo*parametros$coefficients[2]
-#Eliminamos la tendencia de la serie
-serieSinTend <- SerieEntera-TendEstimada
-#Extraemos la estacionalidad
-aux <- ts(SerieEntera,frequency=4)
-aux <- decompose(aux)$seasonal
-estacionalidad <- as.numeric(aux[1:4])
+####################################################################
+###                           Prediccion                         ###
+####################################################################
+serie<-Datos1
+serieEntera<-log(serie) #cogemos toda la serie
+tiempo<-1:length(serieEntera)
+parametros<-lm(serieEntera~tiempo)#Ajustamos modelo de tendencia
+TendEstimada<-parametros$coefficients[1]+tiempo*parametros$coefficients[2]
+serieSinTend<-serieEntera-TendEstimada
+aux<-ts(serieEntera,frequency=4)
+aux<-decompose(aux)$seasonal
+estacionalidad<-as.numeric(aux[1:4])
 aux<-rep(estacionalidad,length(serieSinTend)/length(estacionalidad))
-#eliminamos la estacionalidad
-serieSinTendEst <- serieSinTend - aux
-
-#Construimos el modelo
-modelo <- arima(serieSinTendEst,order=c(4,1,0))
-
-#Calculamos los valores de los valores de la serie predichos por el modelo
-#Prediccion de los 4 siguientes valores
-valoresAjustados <- serieSinTendEst + modelo$residuals
-Predicciones <- predict(modelo, n.ahead = NPred)
-valoresPredichos <- Predicciones$pred
-
-#A partir de aqui a los valores predichos le añadimos la estacionalidad
-valoresAjustados <- valoresAjustados+ aux
-valoresPredichos <- valoresPredichos +estacionalidad
-
-# la tendencia
-valoresAjustados <- valoresAjustados+TendEstimada
-tiempoPred <- (tiempo[length(tiempo)]+(1:NPred))
-TendEstimadaPred <- parametros$coefficients[1]+tiempoPred*parametros$coefficients[2]
-valoresPredichos <- valoresPredichos+TendEstimadaPred
-
-#y por ultimo eliminamos la transformacion log mediante exp
-valoresAjustados <-  exp(valoresPredichos)
-valoresPredichos <- exp(valoresPredichos) 
-
-# Aqui podemos vr los valores , los reales y los predichos por el modelo
-plot.ts(serie, xlim=c(1, max(tiempoPred)))
-lines(valoresAjustados, col="blue")
-lines(tiempoPred,valoresPredichos, col= "red")
-lines(tiempoPred, predReales, col="green")
+serieSinTendEst<-serieSinTend-aux
+modelo<-arima(serieSinTendEst,order=c(0,1,1)) #(4,3,0)
+valoresAjustados<-serieSinTendEst+modelo$residuals
+Predicciones<-predict(modelo,n.ahead=NPred)
+valoresPredichos<-Predicciones$pred
 
 
+#Deshacemos los cambios
+valoresAjustados<-valoresAjustados+aux
+valoresPredichos<-valoresPredichos+estacionalidad[1:2]
+
+valoresAjustados<-valoresAjustados+TendEstimada
+tiempoPred<-tiempo[length(tiempo)]+(1:NPred)
+parametros <- lm (serieEntera ~ tiempo ) # Ajustamos modelo lineal
+TendEstimadaPred<-TendEstimadaPred<-parametros$coefficients[1]+tiempoPred*parametros$coefficients[2]
+valoresPredichos<-valoresPredichos+TendEstimadaPred
+valoresAjustados<-exp(valoresAjustados)
+valoresPredichos<-exp(valoresPredichos)
+serie.original<-Datos1
 
 
-DATOS.TS.AR <- ar(Datos1);
-plot(forecast(DATOS.TS.AR,4,conf=c(20,55)))
-
-
-
-
+PLOT2(c(serie.original,NA,NA),length(serie.original) ,c(valoresAjustados,valoresPredichos))

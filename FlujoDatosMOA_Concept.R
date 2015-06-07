@@ -117,8 +117,11 @@ datos<-as.data.frame(rbind(datos,data.frame(alg=c(5,5,5,5)
                                                    Medida=c("MDR","MTD","MDR","MTD"),Metodo=c("ADWIN","ADWIN","DDM","DDM"))))
          
 
-qplot(alg, valores, data=datos[datos$Medida=="MDR",], geom="bar", stat="identity", fill=valores)+ facet_grid(Metodo ~ .)
-qplot(alg, valores, data=datos[datos$Medida=="MTD",], geom="bar", stat="identity", fill=valores)+ facet_grid(Metodo ~ .)
+qplot(alg, valores, data=datos[datos$Medida=="MDR",],main = "MDR",
+      geom="bar", stat="identity", fill=valores)+ facet_grid(Metodo ~ .)
+
+qplot(alg, valores, data=datos[datos$Medida=="MTD",],main = "MTD",
+      geom="bar", stat="identity", fill=valores)+ facet_grid(Metodo ~ .)
 
 datos$Medida=="MDR"
 
