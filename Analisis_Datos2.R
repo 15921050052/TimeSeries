@@ -1,7 +1,7 @@
 source("Main.R")
 source("Funciones.R")
-NPred<-2
-NTest<-2
+NPred<-12
+NTest<-12
 ##################################################################
 ##                      Trasformaciones                          #
 ##################################################################
@@ -51,8 +51,7 @@ aux<-rep(estacionalidad.H1,length(serieTr)/length(estacionalidad.H1))
 serieTr.SinTendEst.H1<-serieTr.SinTend.H1-aux
 serieTs.SinTendEst.H1<-serieTs.SinTend.H1-estacionalidad.H1
 
-plot.ts(serieTr.SinTendEst.H1,xlim=c(1,tiempoTs[length(tiempoTs)]))
-lines(tiempoTs,serieTs.SinTendEst.H1,col="red")
+PLOT_C2(c(serieTr.SinTendEst.H1,serieTs.SinTendEst.H1),tiempoTr)
 
 ACF(serieTr.SinTendEst.H1)
 PACF(serieTr.SinTendEst.H1)
@@ -63,8 +62,8 @@ serieTr.SinTendDiff.H1<-diff(serieTr.SinTendEst.H1)
 serieTs.SinTendDiff.H1<-diff(serieTs.SinTendEst.H1)
 adf.test(serieTr.SinTendDiff.H1)
 
-acf(serieTr.SinTendDiff.H1)
-pacf(serieTr.SinTendDiff.H1)
+ACF(serieTr.SinTendDiff.H1)
+PACF(serieTr.SinTendDiff.H1)
 
 modelo<-arima(serieTr.SinTendEst.H1,order=c(0,0,2))
 valoresAjustados<-serieTr.SinTendEst.H1+modelo$residuals
@@ -75,10 +74,8 @@ valoresPredichos<-predicciones$pred
 errorTr<-sum((modelo$residual)^2)
 errorTs<-sum(valoresPredichos-serieTs.SinTendEst.H1)^2
 
-plot.ts(serieTr.SinTendEst.H1,xlim=c(1,tiempoTs[length(tiempoTs)]),ylim=c(min(valoresAjustados),max(serieTs.SinTendEst.H1)))
-lines(valoresAjustados,col="blue")
-lines(tiempoTs,serieTs.SinTendEst.H1,col="red")
-lines(tiempoTs,valoresPredichos,col="green")
+PLOT2(c(serieTr.SinTendEst.H1,serieTs.SinTendEst.H1),tiempoTr,c(valoresAjustados,valoresPredichos))
+
 
 #Tes para la selección del modelo y su validación. Comprobamos primeramente la aleatoriedad
 Box.test(modelo$residuals)
@@ -122,9 +119,6 @@ TendEstimadaPred<-parametros$coefficients[1]+parametros$coefficients[2]*tiempoPr
 valoresPredichos<-valoresPredichos+TendEstimadaPred
 valoresAjustados<-exp(valoresAjustados)
 valoresPredichos<-exp(valoresPredichos)
-serie.original<-scan("serie2.dat")
+serie.original<-Datos2
 
-PLOT2(c(serie.original,NA,NA,NA,NA),tiempoTr,c(valoresAjustados,valoresPredichos))
-plot.ts(serie.original,xlim=c(1,max(tiempoPred)))
-lines(valoresAjustados,col="blue")
-lines(valoresPredichos,col="green")
+PLOT2(c(serie.original,rep(NA,12)),tiempoTr,c(valoresAjustados,valoresPredichos))
