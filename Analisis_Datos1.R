@@ -153,13 +153,12 @@ valoresPredichos<-predicciones$pred
 errorTr<-sum((modelo1$residual)^2)
 errorTs<-sum(valoresPredichos-SerSinTendEstTs[1:2])^2
 
-dibujatodo(SerSinTendEstTr,SerSinTendEstTs,valoresAjustados,valoresPredichos,
-           "Entrenamiento","Test","Ajustados","Predichos")
+PLOT2(c(SerSinTendEstTr,SerSinTendEstTs),tiempoTr,c(valoresAjustados,valoresPredichos,NA,NA))
 
-#Test para la selección del modelo y su validación. Comprobamos primeramente la aleatoriedad
+#Comprobacion de la aleatoriedad
 Box.test(modelo1$residuals)
 
-#Ahora vamos a ver si los errores se distribuyen como una normal
+#Errores se distribuyen como una normal
 jarque.bera.test(na.omit(modelo1$residuals))#podemos asumir la normalidad de los residuos
 
 #Test de normalidad Shapiro-Wilk
@@ -176,18 +175,18 @@ valoresPredichos<-predicciones$pred
 errorTr<-sum((modelo2$residual)^2)
 errorTs<-sum(valoresPredichos-SerSinTendEstTs[1:2])^2
 
-dibujatodo(SerSinTendEstTr,SerSinTendEstTs,valoresAjustados,valoresPredichos,
-           "Entrenamiento","Test","Ajustados","Predichos")
+PLOT2(c(SerSinTendEstTr,SerSinTendEstTs),tiempoTr,c(valoresAjustados,valoresPredichos,NA,NA))
+
 
 
 ###################################################################
 ###                   Tests                                     ###
 ###################################################################
 
-#Tes para la selección del modelo y su validación. Comprobamos primeramente la aleatoriedad
+#Comprobamos  aleatoriedad
 Box.test(modelo2$residuals)
 
-#Ahora vamos a ver si los errores se distribuyen como una normal
+#Errores distribuyen como una normal
 jarque.bera.test(na.omit(modelo2$residuals))#podemos asumir la normalidad de los residuos
 
 #Test de normalidad Shapiro-Wilk
@@ -231,3 +230,4 @@ serie.original<-Datos1
 
 
 PLOT2(c(serie.original,NA,NA),length(serie.original) ,c(valoresAjustados,valoresPredichos))
+

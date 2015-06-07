@@ -1,3 +1,7 @@
+#Carlos JEsús Fernandez Basso 75927137
+#Karloos@correo.ugr.es
+#“Ejercicio de trabajo autónomo. Series temporales. Curso 2014-2015”
+
 source("Main.R")
 source("Funciones.R")
 NPred<-12
@@ -5,7 +9,7 @@ NTest<-12
 ##################################################################
 ##                      Trasformaciones                          #
 ##################################################################
-serie<-log(Datos2)
+serie<-(Datos2)#log(Datos2)
 
 serie.ts<-ts(serie,frequency = 12)
 DECOMPOSE(serie.ts)
@@ -122,3 +126,4 @@ valoresPredichos<-exp(valoresPredichos)
 serie.original<-Datos2
 
 PLOT2(c(serie.original,rep(NA,12)),tiempoTr,c(valoresAjustados,valoresPredichos))
+
